@@ -19,9 +19,8 @@ ukrainian_letters = ['й','ц','у','к','е','н','г','ш','щ',
 
 
 def analyse(file):
-	#Perform text analysis
-	#Returns dictionary
-
+#Perform text analysis
+#Returns dictionary
 
 	#Split file into sentences
 	sentences = file.split('.')
@@ -33,8 +32,8 @@ def analyse(file):
 		all_words.extend(words)
 
 	def is_ukr_word(word):
-		#Check if the word is ukrainian
-		#Returns Bool value
+	#Check if the word is ukrainian
+	#Returns Bool value
 
 		letters = list(word)
 		for letter in letters:
@@ -45,8 +44,8 @@ def analyse(file):
 		return False
 
 	def clean_word(word):
-		#Remove all symbols except ukr letters
-		#Returns string
+	#Remove all symbols except ukr letters
+	#Returns string
 
 		letters = list(word)
 		for letter in letters:
@@ -57,7 +56,7 @@ def analyse(file):
 		return "".join(letters)
 
 	def frequency_dict(list_of_words):
-		#Dictionary of words frequency
+	#Dictionary of words frequency
 		unique_words = set(list_of_words)
 		num_of_un_words = len(unique_words)
 		freq_dict = {}
@@ -107,9 +106,6 @@ def analyse(file):
 		lemmas.append(p.normal_form)
 
 	lemmas_dict = frequency_dict(lemmas)
-
-	#Dictionary of parts of speech
-	#/Users/artembogdan/Programming_projects/KhPI_parsing/Moderate - Bogdan Artem 219e
 
 	parts_of_speech = {}
 	for word in new_words:
@@ -176,4 +172,5 @@ for file in filenames:
 		file_content = f.read()
 		print(file)
 		analyse(file_content)
+		print('To analyse next text hit Enter')
 		input()
