@@ -13,14 +13,13 @@
 
 import os, pymorphy2
 
-ukrainian_letters = ['й','ц','у','к','е','н','г','ш','щ',
-	'з','х','ї','ґ','є','ж','д','л','о','р','п','а','в','і',
-	'ф','я','ч','с','м','и','т','ь','б','ю']
-
-
 def analyse(file):
 #Perform text analysis
 #Returns dictionary
+
+	ukrainian_letters = ['й','ц','у','к','е','н','г','ш','щ',
+	'з','х','ї','ґ','є','ж','д','л','о','р','п','а','в','і',
+	'ф','я','ч','с','м','и','т','ь','б','ю']
 
 	#Split file into sentences
 	sentences = file.split('.')
@@ -161,16 +160,23 @@ def analyse(file):
 		{parts_of_speech}
 	''')
 
-# Load files from your directory 
-texts_path = input("Enter absolute path to folder with your texts > ")
-os.curdir = texts_path
 
-filenames = os.listdir(os.curdir)
-for file in filenames:
-	filepath = os.path.join(os.curdir,file)
-	with open(filepath, mode='r', encoding='utf-8') as f:
-		file_content = f.read()
-		print(file)
-		analyse(file_content)
-		print('To analyse next text hit Enter')
-		input()
+def main():
+# Load files from your directory and analyse texts
+
+	texts_path = input("Enter absolute path to folder with your texts > ")
+	os.curdir = texts_path
+
+	filenames = os.listdir(os.curdir)
+	for file in filenames:
+		filepath = os.path.join(os.curdir,file)
+		with open(filepath, mode='r', encoding='utf-8') as f:
+			file_content = f.read()
+			print(file)
+			analyse(file_content)
+			print('To analyse next text hit Enter')
+			input()
+
+
+if __name__ == '__main__':
+	main()
