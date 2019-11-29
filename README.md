@@ -1,13 +1,11 @@
 Python script for text analysis
 
 DEPENDENCIES
-
 Simple 'pip install pymorphy2' does not support ukrainian language. You shoud use 'pip install git+https://github.com/kmike/pymorphy2.git' instead in order to install pymorphy.
 
 To add ukrainian dictionary run 'pip install pymorphy2-dicts-uk'
 
 HOW TO USE IT
-
 You can use this file as library or as a standalone software.
 For library use you can simply run 'from text_analysis import *' to start using Text class of the library.
 Or you can run the file via 'python3 text_analysis.py' and follow the instructions to analyse text in a standart mode.
@@ -30,10 +28,7 @@ DESCRIPTION
     # показано слово, предложение в котором оно встретилось и в каком 
     # файле.
 
-CLASSES
-    builtins.object
-        Text
-    
+DOCS
     class Text(builtins.object)
      |  Text(abs_path)
      |  
