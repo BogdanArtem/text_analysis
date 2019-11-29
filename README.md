@@ -13,10 +13,8 @@ For library use you can simply run 'from text_analysis import *' to start using 
 Or you can run the file via 'python3 text_analysis.py' and follow the instructions to analyse text in a standart mode.
 
 
-NAME
-    text_analysis
-
 DESCRIPTION
+
     # Задание по обработке корпуса медицинской тематики 
     # 1. Создать программу, которая будет позволять: 
     # a. Загружать файлы из выбранной директории 
