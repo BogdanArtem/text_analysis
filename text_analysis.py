@@ -56,7 +56,7 @@ class Text(object):
 
 			#Split file into sentences
 
-			sentences = re.split('\.|\n',file_content)
+			sentences = re.split('\.\s|\n|\?|\!',file_content)
 			self.sentences = [sentence for sentence in sentences if sentence != '']
 
 			#Split file into words
