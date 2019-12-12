@@ -3,15 +3,14 @@ Python script for text analysis
 
 DEPENDENCIES
 
-Before working with this script you should have Python 3.7 installed.
-To install pymorphy2 run 'pip install git+https://github.com/kmike/pymorphy2.git'.
+Before working with this script you should have Python 3.7 installed. Pymorphy2 and dictionary for pymorphy are required as well. To install pymorphy2 run 'pip install git+https://github.com/kmike/pymorphy2.git'.
 To add ukrainian dictionary run 'pip install pymorphy2-dicts-uk'.
 
 HOW TO USE IT
 
 You can use this file as library or as a standalone software.
-For library use you can simply run 'from text_analysis import *' to start using Text class of the library.
-Or you can run the file via 'python3 text_analysis.py' and follow the instructions to analyse text in a standart mode.
+To use it as a library you can simply run 'from text_analysis import *' to start using Text class of the library.
+Or you can run the file via 'python3 text_analysis.py'.
 
 Before running the script place it in the root folder of your texts as shown below
 
@@ -38,6 +37,8 @@ Before running the script place it in the root folder of your texts as shown bel
     │   │   ├── text4.txt
     │   │   └── text5.txt
     │   └── text_analysis.py
+
+Run 'python3 text_analysis.py' in terminal and wath magic happen.
 
 After script execution you will receive a report for each folder with .txt files like shown below
 
@@ -71,7 +72,7 @@ After script execution you will receive a report for each folder with .txt files
 
 
 
-Example of report for folder with 1 .txt file 
+Example of report for folder with one .txt file 
 
     ====================================================================================================
     File_name.txt
