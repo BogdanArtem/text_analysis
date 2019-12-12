@@ -9,10 +9,8 @@ To add ukrainian dictionary run 'pip install pymorphy2-dicts-uk'.
 HOW TO USE IT
 
 You can use this file as library or as a standalone software.
-To use it as a library you can simply run 'from text_analysis import *' to start using Text class of the library.
-Or you can run the file via 'python3 text_analysis.py'.
 
-Before running the script place it in the root folder of your texts as shown below
+Before running the script in standart mode place it in the root folder of your texts as shown below
 
     ── Texts
     │   ├── Complex
@@ -38,7 +36,7 @@ Before running the script place it in the root folder of your texts as shown bel
     │   │   └── text5.txt
     │   └── text_analysis.py
 
-Run 'python3 text_analysis.py' in terminal and wath magic happen.
+Run 'python3 text_analysis.py' in terminal and watch magic happen.
 
 After script execution you will receive a report for each folder with .txt files like shown below
 
@@ -89,7 +87,6 @@ Example of report for folder with one .txt file
     не:1.0463800904977374% 
 
     ============================= Lemma Frequencies ================================= 
-
     з:2.6866515837104075% 
     та:2.48868778280543% 
     у:2.3755656108597285% 
@@ -99,7 +96,6 @@ Example of report for folder with one .txt file
     мати:1.244343891402715% 
 
     ============================= Parts of speach ================================= 
-
     NOUN:19.145927601809955% 
     CONJ:6.730769230769231% 
     PRCL:4.581447963800905% 
