@@ -4,8 +4,8 @@ Python script for text analysis
 DEPENDENCIES
 
 Before working with this script you should have Python 3.7 installed.
-To install pymorphy2 run 'pip install git+https://github.com/kmike/pymorphy2.git'
-To add ukrainian dictionary run 'pip install pymorphy2-dicts-uk'
+To install pymorphy2 run 'pip install git+https://github.com/kmike/pymorphy2.git'.
+To add ukrainian dictionary run 'pip install pymorphy2-dicts-uk'.
 
 HOW TO USE IT
 
