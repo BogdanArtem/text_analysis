@@ -1,22 +1,9 @@
-# Задание по обработке корпуса медицинской тематики 
-# 1. Создать программу, которая будет позволять: 
-# a. Загружать файлы из выбранной директории 
-# b. Выводить следующую информацию: количество слов, предложений, 
-# средняя длина предложений, средняя длина слов. 
-# c. Выводить частоту (относительную частоту) по всем словам, а также 
-# по леммам 
-# d. Выводить частотные списки слов в зависимости от части речи (сущ, 
-# глагол или др) 
-# e. Проводить поиск слов в файлах, в результате которого будет 
-# показано слово, предложение в котором оно встретилось и в каком 
-# файле.
-
-import os, pymorphy2
+import os, pymorphy2, string
 import re
 
 ukrainian_letters = ['й','ц','у','к','е','н','г','ш','щ',
 	'з','х','ї','ґ','є','ж','д','л','о','р','п','а','в','i',
-	'ф','я','ч','с','м','и','т','ь','б','ю',]
+	'ф','я','ч','с','м','и','т','ь','б','ю',"'","’"]
 
 class Text(object):
 	"""docstring for Text"""
@@ -33,21 +20,10 @@ class Text(object):
 			letters = list(word)
 			for letter in letters:
 				if letter.lower() in ukrainian_letters:
-					return True
-				else:
 					pass
-			return False
-
-		def clean_word(word):
-		#Remove all symbols except ukr letters
-		#Returns string
-			letters = list(word.strip())
-			for letter in letters:
-				if letter.lower() in ukrainian_letters:
-					letter = letter.lower()
 				else:
-					letters.remove(letter)
-			return "".join(letters)
+					return False
+			return True
 
 
 		# Open file for reading
@@ -60,47 +36,45 @@ class Text(object):
 			self.sentences = [sentence for sentence in sentences if sentence != '']
 
 			#Split file into words
-			all_words = []
+			self.all_words = []
 			for sentence in self.sentences:
 				words = sentence.split(' ')
-				all_words.extend(words)
+				self.all_words.extend(words)
 
 			# Creates a new list of cleaned words
 			self.ukr_words = []
-			for word in all_words:
+			for word in self.all_words:
+				word = word.strip(string.punctuation+'«»')
 				if is_ukr_word(word):
-					self.ukr_words.append(clean_word(word))
+					self.ukr_words.append(word)
 
 
 		# Create pymorphy2 instance for methods that use pymorphy2
 		self.morph = pymorphy2.MorphAnalyzer(lang='uk')
 
+		#Num of words
+		self.num_words = len(self.all_words)
+
+		#Num of sentences
+		self.num_sent = len(self.sentences)
+
 
 	def analyse(self):
 		"""Returns number of words, number of sentences, average word length and average sentence length in tuple """
-
-		#Num of words
-		num_words = len(self.ukr_words)
-
-		#Num of sentences
-		num_sent = len(self.sentences)
 
 		#Average length of word
 		total_length = 0
 		for word in self.ukr_words:
 			total_length += len(word)
-		av_word_len = total_length/num_words
+		av_word_len = total_length/self.num_words
 
 		#Average length of sentence
 		total_length = 0
 		for sentence in self.sentences:
 			total_length += len(sentence)
-		av_sent_len = total_length/num_words
+		av_sent_len = total_length/self.num_words
 
-		#Save num_words for get_parts_of_speach_freq()
-		self.num_words = num_words
-
-		return num_words, num_sent, av_word_len, av_sent_len
+		return self.num_words, self.num_sent, av_word_len, av_sent_len
 
 
 	def freq_dict(self, list_of_words = None):
@@ -111,17 +85,18 @@ class Text(object):
 			list_of_words = self.ukr_words
 
 		unique_words = set(list_of_words)
-		num_of_un_words = len(unique_words)
+		# num_of_un_words = len(unique_words)
 		freq_dict = {}
 		for un_word in unique_words:
-			freq_dict[un_word] = list_of_words.count(un_word)
+			freq_dict[un_word.lower()] = list_of_words.count(un_word)
 
 		# Sort by frequency
 		sorted_words = sorted(freq_dict, key=freq_dict.get)
 		sorted_words.reverse()
+
 		new_freq_dict = {}
 		for word in sorted_words:
-			new_freq_dict[word] = (freq_dict[word]/num_of_un_words)*100
+			new_freq_dict[word] = (freq_dict[word]/self.num_words)*100
 		return new_freq_dict
 
 
@@ -133,7 +108,6 @@ class Text(object):
 		for word in self.ukr_words:
 			p = self.morph.parse(word)[0]
 			lemmas.append(p.normal_form)
-
 
 		lemmas_dict = self.freq_dict(list_of_words = lemmas)
 		return lemmas_dict
@@ -158,29 +132,57 @@ class Text(object):
 
 if __name__ == '__main__':
 
-	path = input('Please, enter absolute path to your .txt file > ')
-	text = Text(path)
-
-	print((text.analyse()))
-	num_words, num_sent, av_word_len, av_sent_len = text.analyse()
-
-	print("="*100)
-	print(f"Number of words: {num_words}, number of sentences: {num_sent}, average word length: {av_word_len}, average sentence length {av_sent_len}")
-	print("="*100)
-
-	print(text.freq_dict())
-	print("="*100)
-
-	print(text.get_relative_lemma_freq())
-	print("="*100)
-
-	print(text.get_parts_of_speach_freq())
-	print("="*100)
+	# Helper functions
+	def dict_to_text(dictionary):
+		""" Transform dictionary to str for readability """
+		text = ''
+		for key in dictionary:
+			text += f'{key}:{dictionary[key]}% \n'
+		return text
 
 
+	def create_report(root_path, files):
+		"""Creates report in the folder"""
+		report = ''
+		for file in files:
+
+			# Path to the file
+			f_path = os.path.join(path, file)
+
+			text = Text(f_path)
+
+			# Get main charcteristics of text
+			num_words, num_sent, av_word_len, av_sent_len = text.analyse()
+
+			report += '='*100+'\n'
+			report += f'{file}\n'
+			report += '='*100+'\n'*2
+			report += f"Number of words: {num_words}, number of sentences: {num_sent}, average word length: {av_word_len}, average sentence length: {av_sent_len}\n\n"
+			report += f'============================= Frequencies ================================= \n'
+			report += dict_to_text(text.freq_dict()) + '\n'
+			report += f'============================= Lemma Frequencies ================================= \n\n'
+			report += dict_to_text(text.get_relative_lemma_freq()) + '\n'
+			report += f'============================= Parts of speach ================================= \n\n'
+			report += dict_to_text(text.get_parts_of_speach_freq()) + '\n'
+
+		with open(os.path.join(path,'report.txt'), 'w', encoding='utf-8') as f:
+			f.write(report)
 
 
+	path = os.getcwd()
+	# Walk through all leaves in the root tree
+	tree = os.walk(path)
 
+	# Create report for each text
+	for i in tree:
+		path, folders, files = i
+		files_c = files[:]
+		for file in files_c:
+			if not file.endswith('.txt'):
+				files.remove(file)
+
+		if len(files):
+			create_report(path, files)
 
 
 
