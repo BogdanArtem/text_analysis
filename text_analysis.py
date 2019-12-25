@@ -1,13 +1,32 @@
 import os, pymorphy2, string
 import re
 
+# Create pymorphy2 instance for methods that use pymorphy2
+morph = pymorphy2.MorphAnalyzer(lang='uk')
+
 ukrainian_letters = ['й','ц','у','к','е','н','г','ш','щ',
-	'з','х','ї','ґ','є','ж','д','л','о','р','п','а','в','i',
-	'ф','я','ч','с','м','и','т','ь','б','ю',"'","’"]
+	'з','х','ї','ґ','є','ж','д','л','о','р','п','а','в','і','i', #Cyrrilic and latin i
+	'ф','я','ч','с','м','и','т','ь','б','ю',"'","’","-"]
+
+conjucntions = ['і','в', 'та', 'й', 'але', 'а', 'й', 'або', 'чи', 'як', 'коли', 'що',
+ 'як', 'би', 'наскільки', 'хоч', 'мов', 'наче', 'адже', 'аніж', 'втім', 'зате',
+  'мовби', 'мовбито', 'начеб', 'начебто', 'немов', 'немовби', 'немовбито', 'неначе',
+   'неначебто', 'ніби', 'нібито', 'ніж', 'отже', 'отож', 'притім', 'притому', 'причім',
+    'причому', 'проте', 'себто', 'тобто', 'цебто', 'щоб', 'якби', 'якщо', 'отож-то',
+     'тим-то', 'тільки-но', 'тому-то']
+
+prepositions = ['без', 'у', 'в', 'від', 'для', 'по', 'через', 'при', 'над', 'на', 'під', 'до',
+ 'з', 'із', 'як', 'за', 'задля', 'з-під', 'із-за', 'поза', 'щодо']
+
+exceptions = ['т', 'д', 'так', 'є', 'це','ще', 'уже', 'не', 'де']
+
+weed_out = conjucntions + prepositions + exceptions
+
+
 
 class Text(object):
 	"""docstring for Text"""
-	def __init__(self, abs_path):
+	def __init__(self, abs_path=None):
 		"""At initialization creates list of ukraninian words and list of sentences. Takes absolute path to the file as an argument"""
 		self.path = abs_path
 
@@ -27,36 +46,42 @@ class Text(object):
 
 
 		# Open file for reading
-		with open(self.path, mode='r', encoding='utf-8') as f:
-			file_content = f.read()
+		if abs_path:
+			with open(self.path, mode='r', encoding='utf-8') as f:
+				file_content = f.read()
 
-			#Split file into sentences
+				#Split file into sentences
 
-			sentences = re.split('\.\s|\n|\?|\!',file_content)
-			self.sentences = [sentence for sentence in sentences if sentence != '']
+				sentences = re.split('\.\s|\n|\?|\!',file_content)
+				self.sentences = [sentence for sentence in sentences if sentence != '']
 
-			#Split file into words
+				#Split file into words
+				self.all_words = []
+				for sentence in self.sentences:
+					words = sentence.split(' ')
+					self.all_words.extend(words)
+
+				# Creates a new list of cleaned words
+				self.ukr_words = []
+				for word in self.all_words:
+					word = word.strip(string.punctuation+'«»')
+					if is_ukr_word(word) and len(word) > 2 and word.lower() not in weed_out:
+						self.ukr_words.append(word)
+
+
+
+			#Num of words
+			self.num_words = len(self.all_words)
+
+			#Num of sentences
+			self.num_sent = len(self.sentences)
+
+		else:
 			self.all_words = []
-			for sentence in self.sentences:
-				words = sentence.split(' ')
-				self.all_words.extend(words)
-
-			# Creates a new list of cleaned words
 			self.ukr_words = []
-			for word in self.all_words:
-				word = word.strip(string.punctuation+'«»')
-				if is_ukr_word(word):
-					self.ukr_words.append(word)
-
-
-		# Create pymorphy2 instance for methods that use pymorphy2
-		self.morph = pymorphy2.MorphAnalyzer(lang='uk')
-
-		#Num of words
-		self.num_words = len(self.all_words)
-
-		#Num of sentences
-		self.num_sent = len(self.sentences)
+			self.sentences = []
+			self.num_words = 0
+			self.num_sent = 0
 
 
 	def analyse(self):
@@ -96,7 +121,7 @@ class Text(object):
 
 		new_freq_dict = {}
 		for word in sorted_words:
-			new_freq_dict[word] = (freq_dict[word]/self.num_words)*100
+			new_freq_dict[word] = freq_dict[word]
 		return new_freq_dict
 
 
@@ -106,7 +131,7 @@ class Text(object):
 		"""
 		lemmas = []
 		for word in self.ukr_words:
-			p = self.morph.parse(word)[0]
+			p = morph.parse(word)[0]
 			lemmas.append(p.normal_form)
 
 		lemmas_dict = self.freq_dict(list_of_words = lemmas)
@@ -117,15 +142,15 @@ class Text(object):
 		"""Returns key value pair of parts of speach frequency"""
 		parts_of_speech = {}
 		for word in self.ukr_words:
-			p = self.morph.parse(word)[0]
+			p = morph.parse(word)[0]
 
 			if p.tag.POS in parts_of_speech:
 				parts_of_speech[p.tag.POS] += 1
 			else:
 				parts_of_speech[p.tag.POS] = 0
 
-		for keyvalue in parts_of_speech:
-			parts_of_speech[keyvalue] = (parts_of_speech[keyvalue]/self.num_words)*100
+		# for keyvalue in parts_of_speech:
+		# 	parts_of_speech[keyvalue] = (parts_of_speech[keyvalue]/self.num_words)*100
 		return parts_of_speech
 
 
@@ -133,40 +158,82 @@ class Text(object):
 if __name__ == '__main__':
 
 	# Helper functions
-	def dict_to_text(dictionary):
-		""" Transform dictionary to str for readability """
+	def dict_to_text(dictionary, add_POS_col = False):
+		""" Transform dictionary to str for readability and add parts of speach """
 		text = ''
-		for key in dictionary:
-			text += f'{key}:{dictionary[key]}% \n'
-		return text
+
+		if add_POS_col == True:
+			for key in dictionary:
+				p = morph.parse(key)[0]
+				text += f'{key} - {p.tag.POS}  - {dictionary[key]} \n'
+			return text
+		else:
+			for key in dictionary:
+				text += f'{key} - {dictionary[key]} \n'
+			return text
 
 
 	def create_report(root_path, files):
-		"""Creates report in the folder"""
-		report = ''
+		"""Creates reports in the folder"""
+		def write_report(num_words, num_sent, av_word_len, av_sent_len, text, file, f_path):
+				report = ''
+				report += '='*100+'\n'
+				report += f'{file}\n'
+				report += '='*100+'\n'*2
+				report += '='*100+'\n'
+
+				if 'Easy' in f_path:
+					report += 'Text type: Easy\n'
+
+				elif 'Moderate' in f_path:
+					report += 'Text type: Moderate\n'
+
+				elif 'Complex' in f_path:
+					report += 'Text type: Moderate\n'
+
+				else:
+					report += 'Text type: Unknown\n'
+
+				report += '='*100+'\n'*2
+				report += f"Number of words: {num_words}, number of sentences: {num_sent}, average word length: {av_word_len}, average sentence length: {av_sent_len}, words after cleaning: {len(text.ukr_words)}\n"
+
+				# Uncomment to add frequencies
+				# report += f'============================= Frequencies ================================= \n'
+				# report += dict_to_text(text.freq_dict()) + '\n'
+				report += f'============================= Lemma Frequencies ================================= \n\n'
+				report += dict_to_text(text.get_relative_lemma_freq(), add_POS_col = True) + '\n'
+				report += f'============================= Parts of speach ================================= \n\n'
+				report += dict_to_text(text.get_parts_of_speach_freq()) + '\n'
+
+				with open(os.path.join(path,'report.txt'), 'a', encoding='utf-8') as f:
+					f.write(report)
+
+
+		mega_text = Text()
+
+		f = open(os.path.join(path,'report.txt'), 'a', encoding='utf-8')
+
 		for file in files:
 
 			# Path to the file
 			f_path = os.path.join(path, file)
-
 			text = Text(f_path)
 
 			# Get main charcteristics of text
 			num_words, num_sent, av_word_len, av_sent_len = text.analyse()
 
-			report += '='*100+'\n'
-			report += f'{file}\n'
-			report += '='*100+'\n'*2
-			report += f"Number of words: {num_words}, number of sentences: {num_sent}, average word length: {av_word_len}, average sentence length: {av_sent_len}\n\n"
-			report += f'============================= Frequencies ================================= \n'
-			report += dict_to_text(text.freq_dict()) + '\n'
-			report += f'============================= Lemma Frequencies ================================= \n\n'
-			report += dict_to_text(text.get_relative_lemma_freq()) + '\n'
-			report += f'============================= Parts of speach ================================= \n\n'
-			report += dict_to_text(text.get_parts_of_speach_freq()) + '\n'
+			# Add info from small text to total folder text
+			mega_text.all_words += text.all_words
+			mega_text.ukr_words += text.ukr_words
+			mega_text.num_words += text.num_words
+			mega_text.num_sent += text.num_sent
+			mega_text.sentences += text.sentences
 
-		with open(os.path.join(path,'report.txt'), 'w', encoding='utf-8') as f:
-			f.write(report)
+			#Create report
+			write_report(num_words, num_sent, av_word_len, av_sent_len, text, file, f_path)
+
+		num_words, num_sent, av_word_len, av_sent_len = mega_text.analyse()
+		write_report(num_words, num_sent, av_word_len, av_sent_len, mega_text, file='Summary', f_path= os.curdir)
 
 
 	path = os.getcwd()
