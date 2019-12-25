@@ -189,7 +189,7 @@ if __name__ == '__main__':
 					report += 'Text type: Moderate\n'
 
 				elif 'Complex' in f_path:
-					report += 'Text type: Moderate\n'
+					report += 'Text type: Complex\n'
 
 				else:
 					report += 'Text type: Unknown\n'
